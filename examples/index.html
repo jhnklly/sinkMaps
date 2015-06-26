@@ -1,0 +1,170 @@
+<!doctype html>
+<html>
+<head>
+<!-- HatTip https://github.com/turban/Leaflet.Sync -->
+ <meta charset="utf-8">
+    <title>Map Sync Demo - multiple maps listening</title>
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
+
+
+<style type="text/css">
+        html, body { width: 100%; height: 100%; margin: 0; padding: 0;}
+        /*
+        #map, #container { width: 49.5%; height: 100%; }
+        */
+        .left { float: left; }
+        .right { float: right; }
+        .half {width: 50%; height: 100%;}
+        .map { width: 100%; height: 50%; outline: 1px dotted gray;}
+    </style>
+</head>
+
+<body>
+<!--     <div id="map"></div> -->
+    <div class="left half">
+        <div id="map_1" class="map"></div>
+        <div id="map_2" class="map"></div>
+    </div>
+    <div class="right half" >
+        <div id="map_3" class="map"></div>
+        <div id="map_4" class="map"></div>
+    </div>
+
+    <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+    <script src="../L.Map.Sync.js"></script>
+
+    <script src="http://maps.google.com/maps/api/js?v=3&sensor=false"></script>
+    <script src="./google.js"></script>
+
+    <script type="text/javascript">
+        var home_center = [37.8, -122.4];
+        var home_zoom = 9;
+
+
+    var stamenOptions = {
+        attribution:
+            'Map tiles by <a href="http://stamen.com">Stamen Design</a>, ' +
+            '<a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; ' +
+            'Map data OpenStreetmap',
+        subdomains: 'abcd',
+        minZoom: 0,
+        maxZoom: 20
+    };
+
+    var mapboxOptions = {
+        attribution:
+            'Map tiles by <a href="http://mapbox.com">Mapbox</a>, ' +
+            '<a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; ' +
+            'Map data OpenStreetmap',
+        subdomains: 'abcd',
+        minZoom: 0,
+        maxZoom: 20
+    };
+
+    var osmOptions = {
+        attribution:
+            '<a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; ' +
+            'Map data OpenStreetmap',
+        subdomains: 'abcd',
+        minZoom: 0,
+        maxZoom: 20
+    };
+
+    var TILESETS = {};
+
+    TILESETS.osm = {
+        url: "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        options: osmOptions
+    }
+
+
+    TILESETS.mapbox = {
+        url: "https://a.tiles.mapbox.com/v4/mapbox.streets/{z}/{x}/{y}@2x.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6IlhHVkZmaW8ifQ.hAMX5hSW-QnTeRCMAy9A8Q",
+        options: mapboxOptions
+    }
+
+    TILESETS.google = {
+        url: "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+    }
+
+    /*
+    TILESETS.stamen_toner = {
+        url: "http://{s}.tile.stamen.com/toner/{z}/{x}/{y}.png",
+        options: stamenOptions
+    }
+    TILESETS.terrain = {
+        url: "http://{s}.tiles.mapbox.com/v4/greeninfo.5edc7fa0/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoiZ3JlZW5pbmZvIiwiYSI6Ik1HUWRtdEkifQ.aWQKcu787DGrDq7LN5r2iA",
+        options: mapboxOptions
+    }
+    */
+    TILESETS.satellite = {
+        // url: "https://ecn.t3.tiles.virtualearth.net/tiles/a0230102033322.{z}/{x}/{y}.png",
+        url: "http://{s}.tiles.mapbox.com/v4/jhnklly.m6hk3gm7/{z}/{x}/{y}.png?access_token=pk.eyJ1Ijoiamhua2xseSIsImEiOiIxLUVDMzVNIn0.MguPdmGTQUvosyLINY3wGQ",
+        options: osmOptions
+    }
+
+    var styles = [
+        {
+            featureType: 'all',
+            stylers: [{hue: '#ff0000'}]
+        }
+    ];
+
+    var INDEX = 1;
+    for (var key in TILESETS) {
+
+            var zoom_control = INDEX == 1 ? true : false;
+
+            var lyr;
+            if (key == 'google') {
+                //lyr = new L.Google('ROADMAP', { mapOptions: { styles: styles } });
+                lyr = new L.Google('ROADMAP', {
+                    mapOptions: {
+                        //styles: styles
+                    }
+                });
+            } else {
+                lyr = L.tileLayer(TILESETS[key].url, TILESETS[key].options);
+            }
+
+            TILESETS[key].map = L.map('map_'+INDEX, {
+                layers: lyr,
+                center: home_center,
+                zoom: home_zoom,
+                zoomControl: zoom_control
+            });
+
+            INDEX += 1;
+
+    }
+
+
+
+    for (var key in TILESETS) {
+        for (var others in TILESETS) {
+            //if (others !== key && TILESETS[others].map) {
+            if (others !== key) {
+                console.log(key, others);
+                a = TILESETS[key].map;
+                b = TILESETS[others].map;
+                a.sync(b);
+            }
+        }
+    }
+/*
+map.sync(mapA);
+map.sync(mapB);
+*/
+
+// If you want interaction with mapA|B to be synchronized on map,
+// add other links as well.
+// mapA.sync(map);
+// mapA.sync(mapB);
+
+// mapB.sync(map);
+// mapB.sync(mapA);
+
+
+    </script>
+</body>
+</html>
